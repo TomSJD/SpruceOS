@@ -1,3 +1,41 @@
+use volatile::Volatile;
+use core::fmt;
+use lazy_static::lazy_static;
+use spin::Mutex;
+
+/*
+    Static for the writer so that it can be accessed from everywhere
+    without an instance being passed around.
+
+    Using lazy static macro to allow for it to be lazy initialized only
+    when the instance is first accessed which stops compilation errors.
+ */
+lazy_static! {
+    pub static ref WRITER: Mutex<Writer> = Mutex::new(Writer {
+        column_position: 0,
+        colour_code: ColourCode::new(Colour::LightGreen, Colour::Black),
+        buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
+    });
+}
+
+// Macros for println and print
+#[macro_export]
+macro_rules! print {
+    ($($arg:tt)*) => ($crate::vga_buffer::_print(format_args!($($arg)*)));
+}
+
+#[macro_export]
+macro_rules! println {
+    () => ($crate::print!("\n"));
+    ($($arg:tt)*) => ($crate::print!("{}\n", format_args!($($arg)*)));
+}
+
+#[doc(hidden)]
+pub fn _print(args: fmt::Arguments) {
+    use core::fmt::Write;
+    WRITER.lock().write_fmt(args).unwrap();
+}
+
 // Enum for storing colour codes
 // Used for foreground and background colours of chars
 #[allow(dead_code)]
@@ -56,7 +94,7 @@ const BUFFER_WIDTH: usize = 80;
 
 #[repr(transparent)]
 struct Buffer {
-    chars: [[ScreenChar; BUFFER_WIDTH]; BUFFER_HEIGHT],
+    chars: [[Volatile<ScreenChar>; BUFFER_WIDTH]; BUFFER_HEIGHT],
 }
 
 /*
@@ -92,24 +130,41 @@ impl Writer {
                 let col = self.column_position;
 
                 let colour_code = self.colour_code;
-                self.buffer.chars[row][col] = ScreenChar {
+                self.buffer.chars[row][col].write(ScreenChar {
                     ascii_character: byte,
                     colour_code,
-                };
+                });
                 self.column_position += 1;
             }
         }
     }
 
-    fn new_line(&mut self) {/* TODO */}
+    fn new_line(&mut self) {
+        for row in 1..BUFFER_HEIGHT {
+            for col in 0..BUFFER_WIDTH {
+                let character = self.buffer.chars[row][col].read();
+                self.buffer.chars[row - 1][col].write(character);
+            }
+        }
+        self.clear_row(BUFFER_HEIGHT - 1);
+        self.column_position = 0;
+    }
+
+    fn clear_row(&mut self, row: usize) {
+        let blank = ScreenChar {
+            ascii_character: b' ',
+            colour_code: self.colour_code,
+        };
+        for col in 0..BUFFER_WIDTH {
+            self.buffer.chars[row][col].write(blank);
+        }
+    }
 }
 
-pub fn test_print() {
-    let mut writer = Writer {
-        column_position: 0,
-        colour_code: ColourCode::new(Colour::LightGreen, Colour::Black),
-        buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
-    };
-
-    writer.write_string("This is a test of writing strings!");
+// Used to implement rust's formatting macros which will help when writing values (ints, floats)
+impl fmt::Write for Writer {
+    fn write_str(&mut self, s: &str) -> fmt::Result {
+        self.write_string(s);
+        Ok(())
+    }
 }
