@@ -17,8 +17,7 @@ pub extern "C" fn _start() -> ! {
     test_main();
 
     println!("No crash :3");
-
-    loop {}
+    SpruceOS::hlt_loop();
 }
 
 // Panic method for non test panic calls
@@ -26,7 +25,7 @@ pub extern "C" fn _start() -> ! {
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
     println!("{}", _info);
-    loop {}
+    SpruceOS::hlt_loop();
 }
 
 // Panic method for test panic calls
