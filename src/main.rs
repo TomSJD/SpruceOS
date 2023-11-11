@@ -11,8 +11,12 @@ use SpruceOS::println;
 pub extern "C" fn _start() -> ! {
     println!("Hello World!");
 
+    SpruceOS::init();
+
     #[cfg(test)]
     test_main();
+
+    println!("No crash :3");
 
     loop {}
 }
