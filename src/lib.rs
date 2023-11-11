@@ -12,7 +12,6 @@ pub mod interrupts;
 pub mod gdt;
 
 use core::panic::PanicInfo;
-use x86_64::instructions::hlt;
 
 pub fn init() {
     gdt::init();
