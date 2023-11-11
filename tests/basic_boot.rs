@@ -9,25 +9,22 @@ use SpruceOS::println;
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
-    println!("Hello World!");
-
     #[cfg(test)]
     test_main();
 
     loop {}
 }
 
-// Panic method for non test panic calls
-#[cfg(not(test))]
-#[panic_handler]
-fn panic(_info: &PanicInfo) -> ! {
-    println!("{}", _info);
-    loop {}
+fn test_runner(tests: &[&dyn Fn()]) {
+    unimplemented!();
 }
 
-// Panic method for test panic calls
-#[cfg(test)]
 #[panic_handler]
-fn panic(_info: &PanicInfo) -> ! {
-    SpruceOS::test_panic_handler(_info);
+fn panic(info: &PanicInfo) -> ! {
+    SpruceOS::test_panic_handler(info)
+}
+
+#[test_case]
+fn test_println() {
+    println!("test_println output");
 }
