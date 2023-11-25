@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 spin = "0.9.8"
-bootloader = "0.9.23"
+bootloader = { version = "0.9.8", features = ["map_physical_memory"] }
 getrandom = { version = "0.1.14", features = ["dummy"] }
 volatile = "0.2.6"
 x86_64 = "0.14.11"
