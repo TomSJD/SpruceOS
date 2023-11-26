@@ -10,7 +10,7 @@ use alloc::boxed::Box;
 use core::panic::PanicInfo;
 use bootloader::{BootInfo, entry_point};
 use SpruceOS::memory::BootInfoFrameAllocator;
-use SpruceOS::{allocator, println};
+use SpruceOS::println;
 
 entry_point!(kernel_main);
 
@@ -31,7 +31,8 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
 
     allocator::init_heap(&mut mapper, &mut frame_allocator).expect("Heap initialization failed");
 
-    let x = Box::new(41);
+    let heap_value = Box::new(41);
+    println!("heap_value at {heap_value:?}");
 
     #[cfg(test)]
     test_main();
