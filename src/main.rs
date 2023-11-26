@@ -19,7 +19,7 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     use SpruceOS::allocator;
     use x86_64::VirtAddr;
 
-    println!("Spruce OS Kernel 0.0.1");
+    println!("Spruce Kernel 0.0.1");
 
     SpruceOS::init();
 
