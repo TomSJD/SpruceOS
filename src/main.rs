@@ -4,6 +4,9 @@
 #![test_runner(SpruceOS::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
+extern crate alloc;
+
+use alloc::boxed::Box;
 use core::panic::PanicInfo;
 use bootloader::{BootInfo, entry_point};
 use SpruceOS::memory::BootInfoFrameAllocator;
@@ -24,6 +27,8 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     let mut _frame_allocator = unsafe {
         BootInfoFrameAllocator::init(&boot_info.memory_map)
     };
+
+    let x = Box::new(41);
 
     #[cfg(test)]
     test_main();
