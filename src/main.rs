@@ -6,11 +6,10 @@
 
 extern crate alloc;
 
-use alloc::boxed::Box;
 use core::panic::PanicInfo;
 use bootloader::{BootInfo, entry_point};
-use SpruceOS::memory::BootInfoFrameAllocator;
 use SpruceOS::println;
+use SpruceOS::task::{Task, simple_executor::SimpleExecutor};
 
 entry_point!(kernel_main);
 
@@ -31,8 +30,9 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
 
     allocator::init_heap(&mut mapper, &mut frame_allocator).expect("Heap initialization failed");
 
-    let heap_value = Box::new(41);
-    println!("heap_value at {heap_value:?}");
+    let mut executor = SimpleExecutor::new();
+    executor.spawn(Task::new(example_task()));
+    executor.run();
 
     #[cfg(test)]
     test_main();
@@ -54,4 +54,13 @@ fn panic(_info: &PanicInfo) -> ! {
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
     SpruceOS::test_panic_handler(_info);
+}
+
+async fn async_number() -> u32 {
+    69
+}
+
+async fn example_task() {
+    let number = async_number().await;
+    println!("async number: {}", number);
 }

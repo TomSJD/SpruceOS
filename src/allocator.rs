@@ -34,6 +34,10 @@ impl <A> Locked<A> {
     }
 }
 
+/// Dummy allocator for testing purposes.
+///
+/// Should never actually be implemented anywhere because
+/// it literally does nothing.
 pub struct Dummy;
 
 unsafe impl GlobalAlloc for Dummy {
