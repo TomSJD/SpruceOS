@@ -7,6 +7,7 @@
 #![reexport_test_harness_main = "test_main"]
 
 #![feature(alloc_error_handler)]
+#![feature(const_mut_refs)]
 
 extern crate alloc;
 
