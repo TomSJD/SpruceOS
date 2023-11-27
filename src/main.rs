@@ -9,7 +9,7 @@ extern crate alloc;
 use core::panic::PanicInfo;
 use bootloader::{BootInfo, entry_point};
 use SpruceOS::println;
-use SpruceOS::task::{Task, simple_executor::SimpleExecutor};
+use SpruceOS::task::{Task, keyboard, executor::Executor};
 
 entry_point!(kernel_main);
 
@@ -30,15 +30,13 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
 
     allocator::init_heap(&mut mapper, &mut frame_allocator).expect("Heap initialization failed");
 
-    let mut executor = SimpleExecutor::new();
-    executor.spawn(Task::new(example_task()));
-    executor.run();
-
     #[cfg(test)]
     test_main();
 
-    println!("No crash :3");
-    SpruceOS::hlt_loop();
+    let mut executor = Executor::new();
+    executor.spawn(Task::new(example_task()));
+    executor.spawn(Task::new(keyboard::print_keypresses()));
+    executor.run();
 }
 
 // Panic method for non test panic calls
