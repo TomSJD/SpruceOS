@@ -19,6 +19,7 @@ pub mod memory;
 pub mod allocator;
 
 pub mod task;
+pub mod cli;
 
 use core::panic::PanicInfo;
 

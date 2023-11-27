@@ -10,6 +10,13 @@ use core::panic::PanicInfo;
 use bootloader::{BootInfo, entry_point};
 use SpruceOS::println;
 use SpruceOS::task::{Task, keyboard, executor::Executor};
+use SpruceOS::cli::basic_cli::CommandLineInterface;
+// Experimental Graphics Mode
+/*
+use vga::colors::Color16;
+use vga::writers::{Graphics640x480x16, GraphicsWriter, PrimitiveDrawing};
+
+ */
 
 entry_point!(kernel_main);
 
@@ -30,12 +37,25 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
 
     allocator::init_heap(&mut mapper, &mut frame_allocator).expect("Heap initialization failed");
 
+    /*
+    let mode = Graphics640x480x16::new();
+    mode.set_mode();
+    mode.clear_screen(Color16::Black);
+    mode.draw_line((80, 60), (80, 420), Color16::White);
+    mode.draw_line((80, 60), (540, 60), Color16::White);
+    mode.draw_line((80, 420), (540, 420), Color16::White);
+    mode.draw_line((540, 420), (540, 60), Color16::White);
+    mode.draw_line((80, 90), (540, 90), Color16::White);
+
+     */
+
     #[cfg(test)]
     test_main();
 
     let mut executor = Executor::new();
     executor.spawn(Task::new(example_task()));
-    executor.spawn(Task::new(keyboard::print_keypresses()));
+    //executor.spawn(Task::new(keyboard::print_keypresses()));
+    executor.spawn(Task::new(keyboard::handle_keys()));
     executor.run();
 }
 
